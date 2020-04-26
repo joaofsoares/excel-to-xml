@@ -1,6 +1,7 @@
 package com.soares.core
 
 import java.io.File
+import java.io.FileWriter
 
 import com.soares.core.excel.ExcelHandler
 
@@ -18,7 +19,14 @@ abstract class FileHandler extends ExcelHandler {
   protected[core] def saveFile(
       xml: List[(String, String)],
       outputPath: String
-  ): Unit = ???
+  ): Unit = {
+    xml.foreach(x => {
+      val outputFile =
+        new FileWriter(s"$outputPath/${x._1}_${System.currentTimeMillis}.xml")
+      outputFile.write(x._2)
+      outputFile.close()
+    })
+  }
 
   private def isXlsx(fileName: String): Boolean =
     fileName.endsWith(".xlsx")
