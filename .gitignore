@@ -1,5 +1,7 @@
+.idea/
 .metals
 .bloop
 project/target
 project/project
 target/
+src/test/resources/

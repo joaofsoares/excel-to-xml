@@ -1,11 +1,8 @@
 package com.soares.core.excel
 
-import java.io.File
-import java.io.FileInputStream
+import java.io.{File, FileInputStream}
 
-import org.apache.poi.hssf.usermodel.HSSFWorkbook
-import org.apache.poi.hssf.usermodel.HSSFSheet
-import org.apache.poi.hssf.usermodel.HSSFCell
+import org.apache.poi.hssf.usermodel.{HSSFCell, HSSFSheet, HSSFWorkbook}
 import org.apache.poi.ss.usermodel.SheetVisibility
 
 trait XlsHandler extends TagHandler {
@@ -25,41 +22,42 @@ trait XlsHandler extends TagHandler {
     sheetName match {
       case None =>
         val visibleSheets = getVisibleSheets(excelBook)
-        visibleSheets map (vs => processSheet(vs._1, vs._2))
-      case Some(s) => List(processSheet(s, excelBook.getSheet(s)))
+        visibleSheets map processSheet
+      case Some(s) => List(processSheet(excelBook.getSheet(s)))
     }
 
   private def getVisibleSheets(
       excelBook: HSSFWorkbook
-  ): List[(String, HSSFSheet)] =
-    (0 until excelBook.getNumberOfSheets())
+  ): List[HSSFSheet] =
+    (0 until excelBook.getNumberOfSheets)
       .filter(i => excelBook.getSheetVisibility(i) == SheetVisibility.VISIBLE)
-      .map(i => (excelBook.getSheetName(i), excelBook.getSheetAt(i)))
+      .map(i => excelBook.getSheetAt(i))
       .toList
 
   private def processSheet(
-      sheetName: String,
       sheet: HSSFSheet
   ): (String, String) = {
+
     val uniqueNode = getUniqueNode(sheet)
 
     val mapRow = createMapRow(sheet)
 
     val xml = buildTags(uniqueNode, mapRow)
 
-    (sheetName, xml)
+    (sheet.getSheetName, xml)
   }
 
   private def getUniqueNode(sheet: HSSFSheet): List[String] =
-    (1 until sheet.getLastRowNum())
-      .map(i => sheet.getRow(i).getCell(0).getStringCellValue())
+    (2 to sheet.getLastRowNum)
+      .map(i => sheet.getRow(i).getCell(0).toString)
+      .filter(node => node != null || node.toString().isEmpty)
       .distinct
       .toList
 
   private def createMapRow(
       sheet: HSSFSheet
   ): List[(HSSFCell, HSSFCell, HSSFCell)] =
-    (1 until sheet.getLastRowNum())
+    (2 until sheet.getLastRowNum)
       .map(i =>
         (
           sheet.getRow(i).getCell(0),
@@ -74,14 +72,16 @@ trait XlsHandler extends TagHandler {
       mapRow: List[(HSSFCell, HSSFCell, HSSFCell)]
   ): String =
     uniqueNode
-      .map(un => {
-        val nodeFields = mapRow.filter(mr => un == mr._1.getStringCellValue())
+      .flatMap(un => {
+        val nodeFields = mapRow.filter(mr => un == mr._1.toString)
         openTag(un) ::
-          nodeFields.map(nf => {
-            val k = nf._2.getStringCellValue()
-            val v = nf._3.getStringCellValue()
-            s"<$k>$v</$k>"
-          }) ::
+          nodeFields
+            .map(nf => {
+              val k = nf._2.toString
+              val v = nf._3.toString
+              s"\t<$k>$v</$k>"
+            })
+            .mkString("\n") ::
           closeTag(un) :: Nil
       })
       .mkString("\n")

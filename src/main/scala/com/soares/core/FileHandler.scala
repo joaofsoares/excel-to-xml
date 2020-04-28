@@ -1,7 +1,6 @@
 package com.soares.core
 
-import java.io.File
-import java.io.FileWriter
+import java.io.{File, FileWriter}
 
 import com.soares.core.excel.ExcelHandler
 
@@ -24,7 +23,7 @@ abstract class FileHandler extends ExcelHandler {
       val outputFile =
         new FileWriter(s"$outputPath/${x._1}_${System.currentTimeMillis}.xml")
       outputFile.write(x._2)
-      outputFile.close()
+      outputFile.close
     })
   }
 
