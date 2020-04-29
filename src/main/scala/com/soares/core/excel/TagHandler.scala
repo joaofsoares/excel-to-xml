@@ -6,9 +6,9 @@ import org.apache.poi.ss.usermodel.{Workbook, Sheet, Cell, SheetVisibility}
 
 abstract class TagHandler {
 
-  protected[excel] def openTag(s: String) = s"<$s>"
+  private def openTag(s: String) = s"<$s>"
 
-  protected[excel] def closeTag(s: String) = s"</$s>"
+  private def closeTag(s: String) = s"</$s>"
 
   protected[excel] def createXmlBasedOnSheetName(
       excelBook: Workbook,
@@ -52,7 +52,7 @@ abstract class TagHandler {
   private def createMapRow(
       sheet: Sheet
   ): List[(Cell, Cell, Cell)] =
-    (2 until sheet.getLastRowNum)
+    (2 to sheet.getLastRowNum)
       .map(i =>
         (
           sheet.getRow(i).getCell(0),
@@ -66,19 +66,20 @@ abstract class TagHandler {
       uniqueNode: List[String],
       mapRow: List[(Cell, Cell, Cell)]
   ): String =
-    uniqueNode
-      .flatMap(un => {
-        val nodeFields = mapRow.filter(mr => un == mr._1.toString)
-        openTag(un) ::
-          nodeFields
-            .map(nf => {
-              val k = nf._2.toString
-              val v = nf._3.toString
-              s"\t<$k>$v</$k>"
-            })
-            .mkString("\n") ::
-          closeTag(un) :: Nil
-      })
-      .mkString("\n")
+    "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\n" +
+      uniqueNode
+        .flatMap(un => {
+          val nodeFields = mapRow.filter(mr => un == mr._1.toString)
+          openTag(un) ::
+            nodeFields
+              .map(nf => {
+                val k = nf._2.toString
+                val v = nf._3.toString
+                s"\t<$k>$v</$k>"
+              })
+              .mkString("\n") ::
+            closeTag(un) :: Nil
+        })
+        .mkString("\n")
 
 }
