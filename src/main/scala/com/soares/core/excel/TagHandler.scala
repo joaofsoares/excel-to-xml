@@ -6,10 +6,6 @@ import org.apache.poi.ss.usermodel.{Workbook, Sheet, Cell, SheetVisibility}
 
 abstract class TagHandler {
 
-  private def openTag(s: String) = s"<$s>"
-
-  private def closeTag(s: String) = s"</$s>"
-
   protected[excel] def createXmlBasedOnSheetName(
       excelBook: Workbook,
       sheetName: Option[String]
@@ -20,6 +16,10 @@ abstract class TagHandler {
         visibleSheets map processSheet
       case Some(s) => List(processSheet(excelBook.getSheet(s)))
     }
+
+  private def openTag(s: String) = s"<$s>"
+
+  private def closeTag(s: String) = s"</$s>"
 
   private def getVisibleSheets[A](
       excelBook: Workbook
@@ -72,9 +72,10 @@ abstract class TagHandler {
           val nodeFields = mapRow.filter(mr => un == mr._1.toString)
           openTag(un) ::
             nodeFields
+              .filter(_ != null)
               .map(nf => {
-                val k = nf._2.toString
-                val v = nf._3.toString
+                val k = if (nf._2 != null) nf._2.toString else "NOT FOUND"
+                val v = if (nf._3 != null) nf._3.toString else "NOT FOUND"
                 s"\t<$k>$v</$k>"
               })
               .mkString("\n") ::

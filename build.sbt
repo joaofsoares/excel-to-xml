@@ -11,3 +11,5 @@ lazy val root = (project in file("."))
     name := "excel-to-xml",
     libraryDependencies ++= Seq(scalatest, apachepoi, apacheooxml)
   )
+
+assemblyJarName in assembly := "excel-to-xml-0.0.1.jar"

@@ -6,44 +6,56 @@ import org.scalatest.funsuite.AnyFunSuite
 
 class ExcelToXmlTest extends AnyFunSuite {
 
-  test("ExcelToXml getXML") {
-    val resourcePath = getClass.getResource("/Formularios.xlsx")
+  test("ExcelToXml - with file and sheet") {
+    val resourcePath = getClass.getResource("/file_test.xlsx")
     val excelToXml = new ConvertExcelToXml(new File(resourcePath.getPath))
 
     val result = excelToXml.convertExcelToXmlString("AES_I")
 
+    assert(result.length == 1)
+
     if (result.length == 1) {
-      println(s"Sheet: ${result(0)._1}")
-      println(s"XML: ${result(0)._2}")
+
+      val sheetName = result(0)._1
+      assert(!sheetName.isEmpty)
+
+      val xml = result(0)._2
+      assert(!xml.isEmpty)
     }
   }
 
-  // test("ExcelToXml getXML") {
-  //   val resourcePath = getClass.getResource("/Formularios.xlsx")
-  //   val excelToXml = new ConvertExcelToXml(new File(resourcePath.getPath))
+  test("ExcelToXml - with file and for all sheets") {
+    val resourcePath = getClass.getResource("/file_test.xlsx")
+    val excelToXml = new ConvertExcelToXml(new File(resourcePath.getPath))
 
-  //   val result = excelToXml.convertExcelToXmlString
+    val result = excelToXml.convertExcelToXmlString
 
-  //   if (result.length > 0) {
-  //     result.foreach(r => {
-  //       println(s"Sheet: ${r._1}")
-  //       println(s"XML: ${r._2}")
-  //     })
-  //   }
-  // }
+    assert(result.length > 0)
 
-  // test("ExcelToXml saveFile") {
-  //   val resourcePath = getClass.getResource("/Formularios.xlsx")
-  //   val excelToXml = new ConvertExcelToXml(new File(resourcePath.getPath))
+    if (result.length > 0) {
+      result.foreach(r => {
 
-  //   excelToXml.convertExcelToXmlFile("/tmp", "AES_I")
-  // }
+        val sheetName = r._1
+        assert(!sheetName.isEmpty)
 
-  // test("ExcelToXml saveFile") {
-  //   val resourcePath = getClass.getResource("/Formularios.xlsx")
-  //   val excelToXml = new ConvertExcelToXml(new File(resourcePath.getPath))
+        val xml = r._2
+        assert(!xml.isEmpty)
+      })
+    }
+  }
 
-  //   excelToXml.convertExcelToXmlFile("/tmp")
-  // }
+  test("ExcelToXml - with file, directory and sheet saving in /tmp") {
+    val resourcePath = getClass.getResource("/file_test.xlsx")
+    val excelToXml = new ConvertExcelToXml(new File(resourcePath.getPath))
+
+    excelToXml.convertExcelToXmlFile("src/test/resources/output", "AES_I")
+  }
+
+  test("ExcelToXml saveFile") {
+    val resourcePath = getClass.getResource("/file_test.xlsx")
+    val excelToXml = new ConvertExcelToXml(new File(resourcePath.getPath))
+
+    excelToXml.convertExcelToXmlFile("src/test/resources/output")
+  }
 
 }
